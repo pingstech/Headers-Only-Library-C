@@ -1,5 +1,5 @@
 /**
- * @file queue.h
+ * @file HOL_Queue.h
  * @brief Generic ring buffer (circular queue) implementation for embedded systems
  * @note Thread-safe with volatile keywords, ISR-compatible
  * 
@@ -10,8 +10,8 @@
  * - O(1) operations
  */
 
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef HOL_QUEUE_H
+#define HOL_QUEUE_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -306,4 +306,4 @@ static inline int queue_pop_string_##STRING_SIZE##_##QUEUE_SIZE##_helper(       
     queue_##TYPE##_##SIZE##_t name;                                                                        \
     queue_init_##TYPE##_##SIZE(&name)                                                                      \
 
-#endif /* QUEUE_H */
+#endif /* HOL_QUEUE_H */

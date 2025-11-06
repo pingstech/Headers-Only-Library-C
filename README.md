@@ -1,115 +1,285 @@
-# ⚙️ Generic Ring Buffer (Circular Queue) for Embedded Systems
+# 🌐 Language / Dil Seçimi
+[🇺🇸 English](#-english-us) | [🇹🇷 Türkçe](#-türkçe)
 
-This is a highly optimized, zero-dynamic-memory-allocation ring buffer implementation designed specifically for resource-constrained embedded systems. It utilizes C preprocessor macros to achieve compile-time type safety and O(1) performance for all core operations.
+---
+
+## 🇺🇸 English (US)
+
+# ⚙️ HOL Queue — Generic Ring Buffer (Circular Queue) for Embedded Systems
+
+A generic, zero-dynamic-memory ring buffer implementation for embedded systems.
+Provides **O(1)** performance for all core operations and full compile-time type safety.
+
+---
 
 ## ✨ Features
 
-* **Zero Dynamic Memory Allocation:** The queue structure and its buffer are defined statically (on the stack or in global/static memory), eliminating the overhead and uncertainty of `malloc`/`free`.
-* **Compile-time Type Safety:** The `DECLARE_QUEUE` macro creates unique type definitions and function names based on the data type (`TYPE`) and capacity (`SIZE`), ensuring type safety across different queue instances.
-* **O(1) Operations:** All core operations (`push`, `pop`, `count`, `is_empty`) complete in constant time, critical for real-time systems.
-* **Overwrite Policy:** The standard `push` function automatically implements a ring buffer overwrite policy when the buffer is full, discarding the oldest element.
-* **ISR/Thread Ready:** Internal index and count variables are marked with `volatile` for safe access in simple single-threaded and Interrupt Service Routine (ISR) environments.
-    * **Note:** For full thread safety in multi-threaded environments, the caller must implement external locking mechanisms (e.g., disable interrupts, use a mutex).
+* **Zero Dynamic Memory Allocation:**
+  All buffers and indices are statically defined. No `malloc` or `free` calls.
 
-## 🚀 Quick Usage Example
+* **Compile-time Type Safety:**
+  The `DECLARE_QUEUE(TYPE, SIZE)` macro generates unique structures and functions per data type and size.
 
-The library requires only including the header file and using the main declaration macro.
+* **O(1) Operations:**
+  All operations execute in constant time regardless of queue size.
 
-### 1. Basic `uint8_t` Queue
+* **Automatic Overwrite Policy:**
+  When the queue is full, the oldest data is automatically discarded.
 
-```c
-#include "queue.h"
+* **ISR Compatible:**
+  Volatile qualifiers allow safe access from ISRs.
+  *(For multi-threaded use, external synchronization is still required.)*
 
-// 1. Declare and initialize a queue for uint8_t with a capacity of 16
-DECLARE_QUEUE(uint8_t, 16)
+---
 
-// Define the queue instance
-queue_uint8_t_16_t my_u8_queue;
-queue_init_uint8_t_16(&my_u8_queue); 
-
-// 2. Push data (Standard push with overwrite policy)
-queue_push_uint8_t_16(&my_u8_queue, 0xAA);
-queue_push_uint8_t_16(&my_u8_queue, 0xBB);
-
-// 3. Check status and count
-size_t count = queue_count_uint8_t_16(&my_u8_queue); // count == 2
-
-// 4. Pop data
-uint8_t received_data;
-queue_uint8_t_16_status_e status = queue_pop_uint8_t_16(&my_u8_queue, &received_data); 
-// received_data == 0xAA (FIFO)
-
-// 5. Check helper macros
-// DECLARE_QUEUE_AND_INIT(float, 32, sensor_data_queue);
-// size_t memory_usage = QUEUE_MEMORY_BYTES(char, 128); 
-````
-
-### 2\. String Queue Example
-
-The library includes helper macros to easily create queues for fixed-size strings.
+## 🚀 Quick Start Example
 
 ```c
-#include "queue.h"
+#include "HOL_Queue.h"
 
-// Declare a queue for strings up to 32 chars, with a capacity of 8
+// 1. Declare a queue for uint8_t (u8) with capacity 16
+DECLARE_QUEUE(u8, 16)
+
+queue_u8_16_t my_queue;
+queue_initialize_u8_16(&my_queue);
+
+// 2. Push data (with overwrite policy)
+queue_push_u8_16(&my_queue, 0xAA);
+
+// 3. Push data (no-overwrite policy)
+queue_push_no_overwrite_u8_16(&my_queue, 0xBB);
+
+// 4. Check status
+bool empty = queue_is_empty_u8_16(&my_queue);
+bool full = queue_is_full_u8_16(&my_queue);
+size_t count = queue_count_u8_16(&my_queue);
+size_t free_space = queue_available_space_u8_16(&my_queue);
+
+// 5. Pull data (FIFO)
+u8 data;
+queue_pull_u8_16(&my_queue, &data);
+
+// 6. Pull multiple elements
+u8 arr[5];
+size_t read;
+queue_pull_multiple_u8_16(&my_queue, arr, 5, &read);
+
+// 7. Clear the queue
+queue_clear_u8_16(&my_queue);
+```
+
+---
+
+## 🧱 String Queue Example
+
+```c
+#include "HOL_Queue.h"
+
+// Declare a string queue: 32-char strings, 8 elements capacity
 DECLARE_STRING_QUEUE(32, 8)
 
-queue_string_32_t_8_t my_log_queue;
+queue_str_32_8_t log_queue;
 char buffer[32];
 
-// Initialization
-queue_init_string_32_t_8(&my_log_queue); 
+// Initialize
+queue_initialize_str_32_8(&log_queue);
 
-// Push strings using the helper (handles strncpy and null termination)
-queue_push_string_32_8_helper(&my_log_queue, "System Started");
-queue_push_string_32_8_helper(&my_log_queue, "Error Code 42");
+// Push strings
+queue_push_with_string_support_32_8(&log_queue, "System Start");
+queue_push_with_string_support_32_8(&log_queue, "Error 42");
 
-// Pop string using the helper
-int success = queue_pop_string_32_8_helper(&my_log_queue, buffer, sizeof(buffer));
-// buffer contains "System Started"
+// Pull a string
+queue_pull_with_string_support_32_8(&log_queue, buffer, sizeof(buffer));
+// buffer -> "System Start"
 ```
+
+---
 
 ## 🛠️ Macro Reference
 
-| Macro | Description | Generated Structures/Functions |
-| :--- | :--- | :--- |
-| `DECLARE_QUEUE(TYPE, SIZE)` | Main macro to define the queue structure and all inline functions. | `queue_TYPE_SIZE_t`, `queue_init_TYPE_SIZE`, `queue_push_TYPE_SIZE`, etc. |
-| `DECLARE_QUEUE_STATUS(TYPE, SIZE)` | Defines the status enumeration (e.g., `_OK`, `_ERROR_FULL`). | `queue_TYPE_SIZE_status_e` |
-| `DECLARE_STRING_QUEUE(STR_SIZE, Q_SIZE)` | Defines a fixed-length string type and the corresponding queue structure with push/pop helpers. | `string_STR_SIZE_t`, `queue_push_string_..._helper`, etc. |
-| `QUEUE_MEMORY_BYTES(TYPE, SIZE)` | Calculates the exact memory footprint in bytes for a given queue definition. | (Calculates memory at compile time) |
-| `QUEUE_DECLARE_AND_INIT(TYPE, SIZE, name)` | Utility macro to declare and initialize a queue instance in a single line. | Declares and calls `queue_init...` |
+| Macro                                      | Description                                | Generated Components                                        |
+| :----------------------------------------- | :----------------------------------------- | :---------------------------------------------------------- |
+| `DECLARE_QUEUE(TYPE, SIZE)`                | Declares queue struct and inline functions | `queue_TYPE_SIZE_t`, `queue_initialize_TYPE_SIZE`, etc.     |
+| `DECLARE_QUEUE_STATUS(TYPE, SIZE)`         | Defines status enum                        | `QUEUE_TYPE_SIZE_OK`, `_ERROR_FULL`, `_ERROR_EMPTY`, etc.   |
+| `DECLARE_STRING_QUEUE(STR_SIZE, Q_SIZE)`   | Declares string struct and queue helpers   | `str_STR_SIZE`, `queue_push_with_string_support_...`        |
+| `QUEUE_MEMORY_BYTES(TYPE, SIZE)`           | Calculates memory usage                    | `sizeof(TYPE)*SIZE + sizeof(size_t)*3`                      |
+| `QUEUE_DECLARE_AND_INIT(TYPE, SIZE, name)` | Declares and initializes a queue           | `queue_TYPE_SIZE_t name; queue_initialize_TYPE_SIZE(&name)` |
 
-## 📦 Core Functions (Generated by `DECLARE_QUEUE`)
+---
 
-| Function Name Pattern | Policy | Description |
-| :--- | :--- | :--- |
-| `queue_init_...` | | Initializes the queue by setting indices and count to zero. |
-| `queue_push_...` | **Overwrite** | Adds an element. If full, it increments `read_index` (discarding the oldest data) before writing. |
-| `queue_push_no_overwrite_...` | **No Overwrite** | Adds an element. Returns `_ERROR_FULL` if the queue is full. |
-| `queue_pop_...` | | Removes and returns the oldest element (FIFO). |
-| `queue_pop_multiple_...` | | Removes multiple elements into an array. |
-| `queue_peek_...` | | Reads the oldest element without removing it. |
-| `queue_peek_ptr_...` | | Returns a `const` pointer to the oldest element in the buffer (allows zero-copy read). |
-| `queue_is_empty_...` | | Returns `true` if `count == 0`. |
-| `queue_is_full_...` | | Returns `true` if `count >= SIZE`. |
-| `queue_count_...` | | Returns the current number of elements in the queue. |
-| `queue_clear_...` | | Resets the queue to an empty state. |
+## ⚙️ Generated Function List
+
+| Function                            | Description                          |
+| :---------------------------------- | :----------------------------------- |
+| `queue_initialize_TYPE_SIZE`        | Initializes the queue                |
+| `queue_push_TYPE_SIZE`              | Push element (overwrite if full)     |
+| `queue_push_no_overwrite_TYPE_SIZE` | Push element (returns error if full) |
+| `queue_pull_TYPE_SIZE`              | Pop oldest element                   |
+| `queue_pull_multiple_TYPE_SIZE`     | Pop multiple elements                |
+| `queue_peek_TYPE_SIZE`              | Read oldest element without removing |
+| `queue_peek_ptr_TYPE_SIZE`          | Get pointer to oldest element        |
+| `queue_is_empty_TYPE_SIZE`          | Check if queue is empty              |
+| `queue_is_full_TYPE_SIZE`           | Check if queue is full               |
+| `queue_count_TYPE_SIZE`             | Return current count                 |
+| `queue_available_space_TYPE_SIZE`   | Return available slots               |
+| `queue_clear_TYPE_SIZE`             | Clear queue state                    |
+
+---
 
 ## ⚠️ Concurrency Warning
 
-While the internal state variables (`read_index`, `write_index`, `count`) are marked as `volatile` to prevent compiler optimization issues, **the operations themselves are not atomically guaranteed** (e.g., `count++` may be interrupted).
-
-For thread-safe/ISR-safe usage, you **must** wrap all push and pop operations with appropriate synchronization primitives in your calling code:
+While internal variables are marked as `volatile`, operations are **not atomic**.
+For ISR or multi-thread safe usage, wrap operations with synchronization.
 
 ```c
-// Example of required synchronization for ISR safety
-void safe_push(queue_uint8_t_16_t* q, uint8_t data) {
-    // Platform-specific: Disable interrupts
-    uint32_t flags = disable_interrupts(); 
-    
-    queue_push_uint8_t_16(q, data);
-    
-    // Platform-specific: Restore interrupts
+void safe_push(queue_u8_16_t* q, u8 data) {
+    uint32_t flags = disable_interrupts();
+    queue_push_u8_16(q, data);
     restore_interrupts(flags);
 }
+```
+
+---
+
+## 📏 Memory Calculation
+
+```c
+size_t mem = QUEUE_MEMORY_BYTES(u16, 64);
+// Result = sizeof(u16)*64 + sizeof(size_t)*3
+```
+
+---
+## 🇹🇷 Türkçe
+
+
+# ⚙️ HOL Queue — Generic Ring Buffer (Circular Queue) for Embedded Systems
+
+Bu kütüphane, gömülü sistemlerde kullanılmak üzere tasarlanmış, dinamik bellek kullanmayan, **O(1)** karmaşıklıkta çalışan genel amaçlı bir **dairesel kuyruk (ring buffer)** implementasyonudur. Tüm işlemler makro temelli olarak derleme zamanında üretilir.
+
+---
+
+## ✨ Özellikler
+
+* **Sıfır Dinamik Bellek Kullanımı:** Kuyruk yapısı ve tampon belleği tamamen statik olarak tanımlanır.
+* **Derleme Zamanı Tip Güvenliği:** `DECLARE_QUEUE(TYPE, SIZE)` makrosu, tür ve kapasiteye göre benzersiz tip ve fonksiyon isimleri üretir.
+* **O(1) İşlemler:** `push`, `pull`, `peek`, `count`, `is_empty`, `is_full` işlemleri sabit zamanda tamamlanır.
+* **Otomatik Overwrite Politikası:** Tampon dolduğunda en eski veri otomatik olarak silinir.
+* **ISR Uyumlu (Interrupt Safe):** `volatile` kullanımı ile ISR ortamlarında güvenli temel erişim.
+
+  * Çok çekirdekli veya çok iş parçacıklı sistemlerde, kullanıcı dış kilitleme (mutex, interrupt disable vb.) eklemelidir.
+
+---
+
+## 🚀 Hızlı Başlangıç
+
+```c
+#include "HOL_Queue.h"
+
+// 1. uint8_t tipi ve 16 elemanlık kuyruk oluştur
+DECLARE_QUEUE(u8, 16)
+
+queue_u8_16_t my_queue;
+queue_initialize_u8_16(&my_queue);
+
+// 2. Veri ekleme (overwrite)
+queue_push_u8_16(&my_queue, 0xAA);
+
+// 3. Veri ekleme (no-overwrite)
+queue_push_no_overwrite_u8_16(&my_queue, 0xBB);
+
+// 4. Kuyruk durumu kontrolü
+bool empty = queue_is_empty_u8_16(&my_queue);
+bool full = queue_is_full_u8_16(&my_queue);
+size_t count = queue_count_u8_16(&my_queue);
+size_t space = queue_available_space_u8_16(&my_queue);
+
+// 5. Veri okuma
+u8 data;
+queue_pull_u8_16(&my_queue, &data);
+
+// 6. Birden fazla veri çekme
+u8 buffer[5];
+size_t read;
+queue_pull_multiple_u8_16(&my_queue, buffer, 5, &read);
+
+// 7. Kuyruğu temizleme
+queue_clear_u8_16(&my_queue);
+```
+
+---
+
+## 🧱 String Kuyruk Örneği
+
+```c
+#include "HOL_Queue.h"
+
+// 32 karakterlik string, 8 eleman kapasiteli kuyruk
+DECLARE_STRING_QUEUE(32, 8)
+
+queue_str_32_8_t log_queue;
+char buffer[32];
+
+queue_initialize_str_32_8(&log_queue);
+
+// String ekleme (helper makro)
+queue_push_with_string_support_32_8(&log_queue, "System Start");
+queue_push_with_string_support_32_8(&log_queue, "Error 42");
+
+// String çekme
+queue_pull_with_string_support_32_8(&log_queue, buffer, sizeof(buffer));
+// buffer -> "System Start"
+```
+
+---
+
+## 🛠️ Makro Referans Tablosu
+
+| Makro                                      | Açıklama                                     | Üretilen Yapılar/Fonksiyonlar                                                                          |
+| :----------------------------------------- | :------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| `DECLARE_QUEUE(TYPE, SIZE)`                | Ana kuyruk tanımı                            | `queue_TYPE_SIZE_t`, `queue_initialize_TYPE_SIZE`, `queue_push_TYPE_SIZE`, `queue_pull_TYPE_SIZE`, ... |
+| `DECLARE_QUEUE_STATUS(TYPE, SIZE)`         | Durum enum'u üretir                          | `QUEUE_TYPE_SIZE_OK`, `_ERROR_EMPTY`, `_ERROR_FULL`, ...                                               |
+| `DECLARE_STRING_QUEUE(STR_SIZE, Q_SIZE)`   | Sabit uzunluklu string tipi ve kuyruk tanımı | `str_STR_SIZE`, `queue_push_with_string_support_...`, ...                                              |
+| `QUEUE_MEMORY_BYTES(TYPE, SIZE)`           | Kuyruğun bellek boyutunu hesaplar            | `sizeof(TYPE) * SIZE + sizeof(size_t) * 3`                                                             |
+| `QUEUE_DECLARE_AND_INIT(TYPE, SIZE, name)` | Tek satırda kuyruk tanımlama ve başlatma     | `queue_TYPE_SIZE_t name; queue_initialize_TYPE_SIZE(&name)`                                            |
+
+---
+
+## ⚙️ Üretilen Fonksiyonlar
+
+| Fonksiyon                           | Açıklama                        |
+| :---------------------------------- | :------------------------------ |
+| `queue_initialize_TYPE_SIZE`        | Kuyruğu sıfırlar                |
+| `queue_push_TYPE_SIZE`              | FIFO ekleme (overwrite)         |
+| `queue_push_no_overwrite_TYPE_SIZE` | Kuyruk doluysa hata döner       |
+| `queue_pull_TYPE_SIZE`              | En eski öğeyi çeker             |
+| `queue_pull_multiple_TYPE_SIZE`     | Birden fazla öğeyi çeker        |
+| `queue_peek_TYPE_SIZE`              | En eski öğeyi okur (çekmeden)   |
+| `queue_peek_ptr_TYPE_SIZE`          | En eski öğeye işaretçi döndürür |
+| `queue_is_empty_TYPE_SIZE`          | Boş mu kontrol eder             |
+| `queue_is_full_TYPE_SIZE`           | Dolu mu kontrol eder            |
+| `queue_count_TYPE_SIZE`             | Eleman sayısını döndürür        |
+| `queue_available_space_TYPE_SIZE`   | Boş kapasiteyi döndürür         |
+| `queue_clear_TYPE_SIZE`             | Kuyruğu temizler                |
+
+---
+
+## ⚠️ Eşzamanlılık Uyarısı
+
+`volatile` değişkenler kullanılsa da işlemler atomik değildir. ISR veya çok iş parçacıklı ortamlarda güvenli kullanım için kilitleme yapılmalıdır.
+
+```c
+void safe_push(queue_u8_16_t* q, u8 data) {
+    uint32_t flags = disable_interrupts();
+    queue_push_u8_16(q, data);
+    restore_interrupts(flags);
+}
+```
+
+---
+
+## 📄 Bellek Hesaplama
+
+```c
+size_t mem = QUEUE_MEMORY_BYTES(u16, 64); 
+// Yaklaşık: sizeof(u16)*64 + sizeof(size_t)*3
 ```

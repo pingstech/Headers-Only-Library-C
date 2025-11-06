@@ -29,29 +29,30 @@ typedef enum {                                                                  
     QUEUE_##TYPE##_##SIZE##_ERROR_EMPTY,                                                                   \
     QUEUE_##TYPE##_##SIZE##_ERROR_FULL,                                                                    \
     QUEUE_##TYPE##_##SIZE##_ERROR_INVALID_LENGTH                                                           \
-} queue_##TYPE##_##SIZE##_status_e;                                                                                                          
+} queue_##TYPE##_##SIZE##_status_e;
 
 /**
  * @brief Main queue declaration macro
- * @param TYPE Data type (uint8_t, float, custom struct, etc.)
+ * @param TYPE Data type (u8, u16, u32, float, custom struct, etc.)
  * @param SIZE Queue capacity (must be > 0)
  *
- * Usage:
- * DECLARE_QUEUE(uint8_t, 16)
- * queue_uint8_t_16_t my_queue;
- * queue_init_uint8_t_16(&my_queue);                            // Initialization
- * queue_push_uint8_t_16(&my_queue, 0xAA);                      // Push (Overwrite)
- * queue_push_no_overwrite_uint8_t_16(&my_queue, 0xBB);         // Push (No Overwrite)
- * bool empty = queue_is_empty_uint8_t_16(&my_queue);           // Check empty
- * size_t count = queue_count_uint8_t_16(&my_queue);            // Get count
- * size_t space = queue_available_space_uint8_t_16(&my_queue);  // Get available space
- * uint8_t data;
- * queue_peek_uint8_t_16(&my_queue, &data);                     // Peek data
- * const uint8_t* ptr = queue_peek_ptr_uint8_t_16(&my_queue);   // Peek pointer
- * queue_pop_uint8_t_16(&my_queue, &data);                      // Pop (Single)
- * uint8_t arr[5]; size_t read;
- * queue_pop_multiple_uint8_t_16(&my_queue, arr, 5, &read);     // Pop (Multiple)
- * queue_clear_uint8_t_16(&my_queue);                           // Clear
+ * Usage Example:
+ * DECLARE_QUEUE(u8, 16)
+ * queue_u8_16_t my_queue;
+ * queue_initialize_u8_16(&my_queue);                      // Initialization
+ * queue_push_u8_16(&my_queue, 0xAA);                      // Push (Overwrite)
+ * queue_push_no_overwrite_u8_16(&my_queue, 0xBB);         // Push (No Overwrite)
+ * bool empty = queue_is_empty_u8_16(&my_queue);           // Check empty
+ * bool full = queue_is_full_u8_16(&my_queue);             // Check full
+ * size_t count = queue_count_u8_16(&my_queue);            // Get count
+ * size_t space = queue_available_space_u8_16(&my_queue);  // Get available space
+ * u8 data;
+ * queue_peek_u8_16(&my_queue, &data);                     // Peek data
+ * const u8* ptr = queue_peek_ptr_u8_16(&my_queue);        // Peek pointer
+ * queue_pull_u8_16(&my_queue, &data);                     // Pull (Single)
+ * u8 arr[5]; size_t read;
+ * queue_pull_multiple_u8_16(&my_queue, arr, 5, &read);    // Pull (Multiple)
+ * queue_clear_u8_16(&my_queue);                           // Clear
  */
 #define DECLARE_QUEUE(TYPE, SIZE)                                                                          \
                                                                                                            \
@@ -64,9 +65,9 @@ typedef struct {                                                                
     volatile size_t count;                                                                                 \
 } queue_##TYPE##_##SIZE##_t;                                                                               \
                                                                                                            \
-static inline queue_##TYPE##_##SIZE##_status_e queue_init_##TYPE##_##SIZE(queue_##TYPE##_##SIZE##_t* self) \
+static inline queue_##TYPE##_##SIZE##_status_e queue_initialize_##TYPE##_##SIZE(                           \
+    queue_##TYPE##_##SIZE##_t* self)                                                                       \
 {                                                                                                          \
-                                                                                                           \
     if(!self) {                                                                                            \
         return QUEUE_##TYPE##_##SIZE##_ERROR_NULL_POINTER;                                                 \
     }                                                                                                      \
@@ -79,20 +80,20 @@ static inline queue_##TYPE##_##SIZE##_status_e queue_init_##TYPE##_##SIZE(queue_
 }                                                                                                          \
                                                                                                            \
 static inline bool queue_is_empty_##TYPE##_##SIZE(                                                         \
-    const queue_##TYPE##_##SIZE##_t* self) {                                                               \
-                                                                                                           \
+    const queue_##TYPE##_##SIZE##_t* self)                                                                 \
+{                                                                                                          \
     return (self == NULL || self->count == 0);                                                             \
 }                                                                                                          \
                                                                                                            \
 static inline bool queue_is_full_##TYPE##_##SIZE(                                                          \
-    const queue_##TYPE##_##SIZE##_t* self) {                                                               \
-                                                                                                           \
+    const queue_##TYPE##_##SIZE##_t* self)                                                                 \
+{                                                                                                          \
     return (self != NULL && self->count >= SIZE);                                                          \
 }                                                                                                          \
                                                                                                            \
 static inline size_t queue_count_##TYPE##_##SIZE(                                                          \
-    const queue_##TYPE##_##SIZE##_t* self) {                                                               \
-                                                                                                           \
+    const queue_##TYPE##_##SIZE##_t* self)                                                                 \
+{                                                                                                          \
     if(!self) {                                                                                            \
         return 0;                                                                                          \
     }                                                                                                      \
@@ -101,8 +102,8 @@ static inline size_t queue_count_##TYPE##_##SIZE(                               
 }                                                                                                          \
                                                                                                            \
 static inline size_t queue_available_space_##TYPE##_##SIZE(                                                \
-    const queue_##TYPE##_##SIZE##_t* self) {                                                               \
-                                                                                                           \
+    const queue_##TYPE##_##SIZE##_t* self)                                                                 \
+{                                                                                                          \
     if(!self) {                                                                                            \
         return 0;                                                                                          \
     }                                                                                                      \
@@ -111,8 +112,8 @@ static inline size_t queue_available_space_##TYPE##_##SIZE(                     
 }                                                                                                          \
                                                                                                            \
 static inline queue_##TYPE##_##SIZE##_status_e queue_push_##TYPE##_##SIZE(                                 \
-    queue_##TYPE##_##SIZE##_t* self, TYPE data) {                                                          \
-                                                                                                           \
+    queue_##TYPE##_##SIZE##_t* self, TYPE data)                                                            \
+{                                                                                                          \
     if(!self) {                                                                                            \
         return QUEUE_##TYPE##_##SIZE##_ERROR_NULL_POINTER;                                                 \
     }                                                                                                      \
@@ -132,8 +133,8 @@ static inline queue_##TYPE##_##SIZE##_status_e queue_push_##TYPE##_##SIZE(      
 }                                                                                                          \
                                                                                                            \
 static inline queue_##TYPE##_##SIZE##_status_e queue_push_no_overwrite_##TYPE##_##SIZE(                    \
-    queue_##TYPE##_##SIZE##_t* self, TYPE data) {                                                          \
-                                                                                                           \
+    queue_##TYPE##_##SIZE##_t* self, TYPE data)                                                            \
+{                                                                                                          \
     if(!self) {                                                                                            \
         return QUEUE_##TYPE##_##SIZE##_ERROR_NULL_POINTER;                                                 \
     }                                                                                                      \
@@ -149,9 +150,9 @@ static inline queue_##TYPE##_##SIZE##_status_e queue_push_no_overwrite_##TYPE##_
     return QUEUE_##TYPE##_##SIZE##_OK;                                                                     \
 }                                                                                                          \
                                                                                                            \
-static inline queue_##TYPE##_##SIZE##_status_e queue_pop_##TYPE##_##SIZE(                                  \
-    queue_##TYPE##_##SIZE##_t* self, TYPE* data) {                                                         \
-                                                                                                           \
+static inline queue_##TYPE##_##SIZE##_status_e queue_pull_##TYPE##_##SIZE(                                 \
+    queue_##TYPE##_##SIZE##_t* self, TYPE* data)                                                           \
+{                                                                                                          \
     if(!self || !data) {                                                                                   \
         return QUEUE_##TYPE##_##SIZE##_ERROR_NULL_POINTER;                                                 \
     }                                                                                                      \
@@ -167,9 +168,9 @@ static inline queue_##TYPE##_##SIZE##_status_e queue_pop_##TYPE##_##SIZE(       
     return QUEUE_##TYPE##_##SIZE##_OK;                                                                     \
 }                                                                                                          \
                                                                                                            \
-static inline queue_##TYPE##_##SIZE##_status_e queue_pop_multiple_##TYPE##_##SIZE(                         \
-    queue_##TYPE##_##SIZE##_t* self, TYPE* data_out, size_t length, size_t* read_count) {                  \
-                                                                                                           \
+static inline queue_##TYPE##_##SIZE##_status_e queue_pull_multiple_##TYPE##_##SIZE(                        \
+    queue_##TYPE##_##SIZE##_t* self, TYPE* data_out, size_t length, size_t* read_count)                    \
+{                                                                                                          \
     if(!self || !data_out || length == 0) {                                                                \
         return QUEUE_##TYPE##_##SIZE##_ERROR_NULL_POINTER;                                                 \
     }                                                                                                      \
@@ -196,8 +197,8 @@ static inline queue_##TYPE##_##SIZE##_status_e queue_pop_multiple_##TYPE##_##SIZ
 }                                                                                                          \
                                                                                                            \
 static inline queue_##TYPE##_##SIZE##_status_e queue_peek_##TYPE##_##SIZE(                                 \
-    const queue_##TYPE##_##SIZE##_t* self, TYPE* data) {                                                   \
-                                                                                                           \
+    const queue_##TYPE##_##SIZE##_t* self, TYPE* data)                                                     \
+{                                                                                                          \
     if(!self || !data) {                                                                                   \
         return QUEUE_##TYPE##_##SIZE##_ERROR_NULL_POINTER;                                                 \
     }                                                                                                      \
@@ -212,8 +213,8 @@ static inline queue_##TYPE##_##SIZE##_status_e queue_peek_##TYPE##_##SIZE(      
 }                                                                                                          \
                                                                                                            \
 static inline const TYPE* queue_peek_ptr_##TYPE##_##SIZE(                                                  \
-    const queue_##TYPE##_##SIZE##_t* self) {                                                               \
-                                                                                                           \
+    const queue_##TYPE##_##SIZE##_t* self)                                                                 \
+{                                                                                                          \
     if(!self || self->count == 0) {                                                                        \
         return NULL;                                                                                       \
     }                                                                                                      \
@@ -222,8 +223,8 @@ static inline const TYPE* queue_peek_ptr_##TYPE##_##SIZE(                       
 }                                                                                                          \
                                                                                                            \
 static inline void queue_clear_##TYPE##_##SIZE(                                                            \
-    queue_##TYPE##_##SIZE##_t* self) {                                                                     \
-                                                                                                           \
+    queue_##TYPE##_##SIZE##_t* self)                                                                       \
+{                                                                                                          \
     if(!self) {                                                                                            \
         return;                                                                                            \
     }                                                                                                      \
@@ -240,44 +241,45 @@ static inline void queue_clear_##TYPE##_##SIZE(                                 
  * @param STRING_SIZE Maximum string length (including null terminator)
  * @param QUEUE_SIZE Queue capacity
  *
- * Usage:
+ * Usage Example:
  * DECLARE_STRING_QUEUE(32, 8)
- * queue_string_32_t_8_t my_string_queue;
+ * queue_str_32_8_t my_string_queue;
  * char buffer[32];
- * queue_init_string_32_t_8(&my_string_queue);                                              // Initialize queue
- * queue_push_string_32_8_helper(&my_string_queue, "Message 1");                            // Push string helper
- * int success = queue_pop_string_32_8_helper(&my_string_queue, buffer, sizeof(buffer));    // Pop string helper
- * size_t count = queue_count_string_32_t_8(&my_string_queue);                              // Get count
- * queue_clear_string_32_t_8(&my_string_queue);                                             // Clear
+ * queue_initialize_str_32_8(&my_string_queue);                                                 // Initialize queue
+ * queue_push_with_string_support_32_8(&my_string_queue, "Message 1");                          // Push string helper
+ * int success = queue_pull_with_string_support_32_8(&my_string_queue, buffer, sizeof(buffer)); // Pull string helper
+ * size_t count = queue_count_str_32_8(&my_string_queue);                                       // Get count
+ * queue_clear_str_32_8(&my_string_queue);                                                      // Clear
  */
 #define DECLARE_STRING_QUEUE(STRING_SIZE, QUEUE_SIZE)                                                      \
                                                                                                            \
 typedef struct {                                                                                           \
     char data[STRING_SIZE];                                                                                \
-} string_##STRING_SIZE##_t;                                                                                \
+} str_##STRING_SIZE;                                                                                       \
                                                                                                            \
-DECLARE_QUEUE(string_##STRING_SIZE##_t, QUEUE_SIZE)                                                        \
                                                                                                            \
-static inline void queue_push_string_##STRING_SIZE##_##QUEUE_SIZE##_helper(                                \
-    queue_string_##STRING_SIZE##_t_##QUEUE_SIZE##_t* queue, const char* str) {                             \
+DECLARE_QUEUE(str_##STRING_SIZE, QUEUE_SIZE)                                                               \
                                                                                                            \
+static inline void queue_push_with_string_support_##STRING_SIZE##_##QUEUE_SIZE(                            \
+    queue_str_##STRING_SIZE##_##QUEUE_SIZE##_t* queue, const char* str)                                    \
+{                                                                                                          \
     if(!queue || !str) return;                                                                             \
                                                                                                            \
-    string_##STRING_SIZE##_t item;                                                                         \
+    str_##STRING_SIZE item;                                                                                \
     strncpy(item.data, str, STRING_SIZE - 1);                                                              \
     item.data[STRING_SIZE - 1] = '\0';                                                                     \
                                                                                                            \
-    queue_push_string_##STRING_SIZE##_t_##QUEUE_SIZE(queue, item);                                         \
+    queue_push_str_##STRING_SIZE##_##QUEUE_SIZE(queue, item);                                              \
 }                                                                                                          \
                                                                                                            \
-static inline int queue_pop_string_##STRING_SIZE##_##QUEUE_SIZE##_helper(                                  \
-    queue_string_##STRING_SIZE##_t_##QUEUE_SIZE##_t* queue, char* output, size_t max_len) {                \
-                                                                                                           \
+static inline int queue_pull_with_string_support_##STRING_SIZE##_##QUEUE_SIZE(                             \
+    queue_str_##STRING_SIZE##_##QUEUE_SIZE##_t* queue, char* output, size_t max_len)                       \
+{                                                                                                          \
     if(!queue || !output || max_len == 0) return 0;                                                        \
                                                                                                            \
-    string_##STRING_SIZE##_t item;                                                                         \
-    if(queue_pop_string_##STRING_SIZE##_t_##QUEUE_SIZE(queue, &item) ==                                    \
-       QUEUE_string_##STRING_SIZE##_t_##QUEUE_SIZE##_OK) {                                                 \
+    str_##STRING_SIZE item;                                                                                \
+    if(queue_pull_str_##STRING_SIZE##_##QUEUE_SIZE(queue, &item) ==                                        \
+       QUEUE_str_##STRING_SIZE##_##QUEUE_SIZE##_OK) {                                                      \
         strncpy(output, item.data, max_len - 1);                                                           \
         output[max_len - 1] = '\0';                                                                        \
         return 1;                                                                                          \
@@ -291,7 +293,7 @@ static inline int queue_pop_string_##STRING_SIZE##_##QUEUE_SIZE##_helper(       
  * @brief Calculate memory usage of a queue
  *
  * Usage:
- * size_t size_bytes = QUEUE_MEMORY_BYTES(uint16_t, 64);
+ * size_t size_bytes = QUEUE_MEMORY_BYTES(u16, 64);
  */
 #define QUEUE_MEMORY_BYTES(TYPE, SIZE) (sizeof(TYPE) * (SIZE) + sizeof(size_t) * 3)
 
@@ -299,11 +301,22 @@ static inline int queue_pop_string_##STRING_SIZE##_##QUEUE_SIZE##_helper(       
  * @brief Declare and initialize a queue in one line
  *
  * Usage:
- * This declares 'sensor_queue' of type uint16_t, size 64, and initializes it.
- * QUEUE_DECLARE_AND_INIT(uint16_t, 64, sensor_queue)
+ * QUEUE_DECLARE_AND_INIT(u16, 64, sensor_queue)
+ * This declares 'sensor_queue' of type u16, size 64, and initializes it.
  */
 #define QUEUE_DECLARE_AND_INIT(TYPE, SIZE, name)                                                           \
     queue_##TYPE##_##SIZE##_t name;                                                                        \
-    queue_init_##TYPE##_##SIZE(&name)                                                                      \
+    queue_initialize_##TYPE##_##SIZE(&name)
+
+/* ==================== TYPE ALIASES ==================== */
+
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef int8_t   s8;
+typedef int16_t  s16;
+typedef int32_t  s32;
+typedef int64_t  s64;
 
 #endif /* HOL_QUEUE_H */

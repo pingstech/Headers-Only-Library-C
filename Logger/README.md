@@ -41,7 +41,7 @@ void uart_send(const char* msg) {
 int main(void) {
     APP_set_callback(uart_send);
 
-    APP_enable();
+    APP_log_enable();
     APP_LOG_INFO("System initialized");
 
     APP_set_level_filter(APP_LOG_LEVEL_WARNING);
@@ -55,14 +55,14 @@ int main(void) {
 
 ## 🧩 API Overview
 
-| Function / Macro                     | Description                                 |
-| ------------------------------------ | ------------------------------------------- |
-| `DECLARE_LOG(TAG, SIZE, RETTYPE)`    | Creates independent logger instance         |
-| `TAG_set_callback(func)`             | Set output handler                          |
-| `TAG_enable()` / `TAG_disable()`     | Global on/off control                       |
-| `TAG_set_level_filter(level)`        | Minimum level control                       |
-| `TAG_LOG_DEBUG/INFO/WARNING/ERROR()` | Logging macros with printf-style formatting |
-| `TAG_is_enabled()`                   | Returns current enable state                |
+| Function / Macro                         | Description                                 |
+| ---------------------------------------- | ------------------------------------------- |
+| `DECLARE_LOG(TAG, SIZE, RETTYPE)`        | Creates independent logger instance         |
+| `TAG_set_callback(func)`                 | Set output handler                          |
+| `TAG_log_enable()` / `TAG_log_disable()` | Global on/off control                       |
+| `TAG_set_level_filter(level)`            | Minimum level control                       |
+| `TAG_LOG_DEBUG/INFO/WARNING/ERROR()`     | Logging macros with printf-style formatting |
+| `TAG_is_enabled()`                       | Returns current enable state                |
 
 ---
 
@@ -121,9 +121,9 @@ DECLARE_LOG(SPI, 128, void)
 DECLARE_LOG(APP, 128, void)
 
 void debug_mode(void) {
-    UART_enable();
-    SPI_enable();
-    APP_enable();
+    UART_log_enable();
+    SPI_log_enable();
+    APP_log_enable();
     APP_set_level_filter(APP_LOG_LEVEL_DEBUG);
 }
 ```
@@ -176,7 +176,7 @@ void uart_send(const char* msg) {
 int main(void) {
     APP_set_callback(uart_send);
 
-    APP_enable();
+    APP_log_enable();
     APP_LOG_INFO("Sistem başlatıldı");
 
     APP_set_level_filter(APP_LOG_LEVEL_WARNING);

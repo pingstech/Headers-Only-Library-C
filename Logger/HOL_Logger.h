@@ -42,14 +42,14 @@
  *     APP_set_callback(uart_send);
  *     
  *     // Enable/disable entire logger
- *     APP_enable();                    // Enable all logs
+ *     APP_log_enable();                    // Enable all logs
  *     APP_LOG_INFO("This will print");
  *     
- *     APP_disable();                   // Disable all logs
+ *     APP_log_disable();                   // Disable all logs
  *     APP_LOG_INFO("This won't print");
  *     
  *     // Fine-grained level control
- *     APP_enable();
+ *     APP_log_enable();
  *     APP_set_level_filter(APP_LOG_LEVEL_WARNING);  // Only WARNING and ERROR
  *     APP_LOG_DEBUG("Hidden");         // Won't print
  *     APP_LOG_INFO("Hidden");          // Won't print
@@ -111,8 +111,8 @@
  * 
  * @note Generated functions:
  *   - TAG_set_callback(handler)           : Register output callback
- *   - TAG_enable()                        : Enable all log levels
- *   - TAG_disable()                       : Disable all log levels
+ *   - TAG_log_enable()                        : Enable all log levels
+ *   - TAG_log_disable()                       : Disable all log levels
  *   - TAG_is_enabled()                    : Check if logger is enabled
  *   - TAG_set_level_filter(min_level)     : Set minimum log level
  *   - TAG_get_level_filter()              : Get current minimum level
@@ -172,7 +172,7 @@ static inline void TAG##_set_callback(TAG##_log_ready_callback_t handler)       
  * APP_LOG_INFO("Logging is now active");                                                      \
  * @endcode                                                                                    \
  */                                                                                            \
-static inline void TAG##_enable(void)                                                          \
+static inline void TAG##_log_enable(void)                                                      \
 {                                                                                              \
     TAG##_log_enabled = true;                                                                  \
 }                                                                                              \
@@ -191,7 +191,7 @@ static inline void TAG##_enable(void)                                           
  * APP_LOG_INFO("This won't print");  // Zero overhead                                         \
  * @endcode                                                                                    \
  */                                                                                            \
-static inline void TAG##_disable(void)                                                         \
+static inline void TAG##_log_disable(void)                                                     \
 {                                                                                              \
     TAG##_log_enabled = false;                                                                 \
 }                                                                                              \
@@ -208,7 +208,7 @@ static inline void TAG##_disable(void)                                          
  * }                                                                                           \
  * @endcode                                                                                    \
  */                                                                                            \
-static inline bool TAG##_is_enabled(void)                                                      \
+static inline bool TAG##_log_is_enabled(void)                                                  \
 {                                                                                              \
     return TAG##_log_enabled;                                                                  \
 }                                                                                              \

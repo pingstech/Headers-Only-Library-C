@@ -75,7 +75,7 @@ void uart_send(const char* msg) {
 
 int main(void) {
     APP_set_callback(uart_send);
-    APP_enable();
+    APP_log_enable();
 
     APP_LOG_INFO("System initialized");
     APP_LOG_WARNING("Low battery: %d%%", 15);
@@ -178,4 +178,3 @@ APP_LOG_ERROR("System halted!");
 
 * [HOL_Logger module documentation](Logger/README.md)
 * [HOL_Queue module documentation](Queue/README.md)
-
